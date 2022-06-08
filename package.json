@@ -1,6 +1,6 @@
 {
-  "name": "vue-datepicker-local",
-  "version": "1.0.19",
+  "name": "vue-datepicker-local-offset",
+  "version": "1.0.0",
   "description": "A datepicker for Vue.js",
   "main": "src/index.js",
   "files": [
@@ -25,21 +25,21 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/weifeiyue/vue-datepicker-local.git"
+    "url": "git+https://github.com/bonbonmark/vue-datepicker-local"
   },
   "keywords": [
     "vue",
     "datepicker",
     "components"
   ],
-  "author": "weifeiyue <weifeiyue@meizu.com>",
+  "author": "bonbonmark <bonbonmark@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/weifeiyue/vue-datepicker-local/issues"
+    "url": "https://github.com/bonbonmark/vue-datepicker-local/issues"
   },
-  "homepage": "https://github.com/weifeiyue/vue-datepicker-local#readme",
+  "homepage": "https://github.com/bonbonmark/vue-datepicker-local#readme",
   "dependencies": {
-    "vue": "^2.5.15"
+    "vue": "^2.6.12"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
