@@ -95,7 +95,6 @@ export default {
   },
   watch: {
     value (val) {
-      console.log("watch: " + this.value);
       this.dates = this.vi(this.value)
       this.text = this.displayText()
     }
@@ -199,6 +198,8 @@ export default {
   },
   mounted () {
     document.addEventListener('click', this.dc, true)
+    this.dates = this.vi(this.value)
+    this.text = this.displayText()
   },
   beforeDestroy () {
     document.removeEventListener('click', this.dc, true)

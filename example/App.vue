@@ -22,7 +22,7 @@ export default {
     const max = new Date(2017, 8, 30, 0, 0, 0)
     const now = new Date()
     return {
-      empty: '',
+      empty: now,
       now: now,
       time: min,
       min: min,
