@@ -9,6 +9,8 @@
   <vue-datepicker-local v-model="empty" format="YYYY-MM-DD HH:mm:ss" clearable placeholder="select date"/><br/>
   <vue-datepicker-local v-model="now" disabled/><br/>
   <vue-datepicker-local v-model="timeRange"/><br/>
+  測民國年: <vue-datepicker-local v-model="empty" format="YYYYMMDD" placeholder="請選擇日期" :yearOffset="1911"/><br/>
+  日期: <span>{{empty}}</span>
 </div>
 </template>
 
