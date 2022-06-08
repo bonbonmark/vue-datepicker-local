@@ -6,7 +6,7 @@
     <a :class="`${pre}-prev-month-btn`" v-show="!showYears&&!showMonths" @click="pm">‹</a>
     <a :class="`${pre}-year-select`" v-show="showYears">{{ys+'-'+ye}}</a>
     <template v-if="local.yearSuffix">
-      <a :class="`${pre}-year-select`" @click="showYears=!showYears" v-show="!showYears">{{year}}{{local.yearSuffix}}</a>
+      <a :class="`${pre}-year-select`" @click="showYears=!showYears" v-show="!showYears">{{displayYear}}{{local.yearSuffix}}</a>
       <a :class="`${pre}-month-select`" @click="showMonths=!showMonths" v-show="!showYears&&!showMonths">{{local.monthsHead[month]}}</a>
     </template>
     <template v-else>
@@ -26,7 +26,7 @@
       <a v-for="(i,j) in local.months" @click="is($event)&&(showMonths=(m==='M'),month=j,(m==='M'&&ok('m')))" :class="[status(year,j,day,hour,minute,second,'YYYYMM')]" :key="j">{{i}}</a>
     </div>
     <div :class="`${pre}-years`" v-show="showYears">
-      <a v-for="(i,j) in years" @click="is($event)&&(showYears=(m==='Y'),year=i,(m==='Y'&&ok('y')))" :class="[(j===0||j===11)?`${pre}-date-out`:'',status(i,month,day,hour,minute,second,'YYYY')]" :key="j">{{i}}</a>
+      <a v-for="(i,j) in years" @click="is($event)&&(showYears=(m==='Y'),year=i+yearOffset,(m==='Y'&&ok('y')))" :class="[(j===0||j===11)?`${pre}-date-out`:'',status(i,month,day,hour,minute,second,'YYYY')]" :key="j">{{i}}</a>
     </div>
     <div :class="`${pre}-hours`" v-show="showHours">
       <div :class="`${pre}-title`">{{local.hourTip}}</div>
@@ -59,7 +59,8 @@ export default {
   props: {
     value: null,
     left: false,
-    right: false
+    right: false,
+    yearOffset: 0
   },
   data () {
     const time = this.get(this.value)
@@ -105,7 +106,7 @@ export default {
       return this.parse(this.$parent.dates[1])
     },
     ys () {
-      return parseInt(this.year / 10) * 10
+      return parseInt(this.displayYear / 10) * 10
     },
     ye () {
       return this.ys + 10
@@ -157,6 +158,9 @@ export default {
         })
       }
       return days
+    },
+    displayYear() {
+      return this.year - this.yearOffset;
     }
   },
   filters: {

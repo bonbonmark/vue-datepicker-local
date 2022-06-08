@@ -1,15 +1,15 @@
 <template>
 <div class="datepicker" :class="{'datepicker-range':range,'datepicker__clearable':clearable&&text&&!disabled}">
-  <input readonly :value="text" :class="[show ? 'focus' : '', inputClass]" :disabled="disabled" :placeholder="placeholder" :name="name" v-if="type!=='inline'"/>
+  <input v-model="text" :class="[show ? 'focus' : '', inputClass]" :disabled="disabled" :placeholder="placeholder" :name="name" v-if="type!=='inline'" @change="syncDate()" />
   <a class="datepicker-close" @click.stop="cls"></a>
   <transition name="datepicker-anim">
     <div class="datepicker-popup" :class="[popupClass,{'datepicker-inline':type==='inline'}]" tabindex="-1" v-if="show||type==='inline'">
       <template v-if="range">
-        <vue-datepicker-local-calendar v-model="dates[0]" :left="true"></vue-datepicker-local-calendar>
-        <vue-datepicker-local-calendar v-model="dates[1]" :right="true"></vue-datepicker-local-calendar>
+        <vue-datepicker-local-calendar v-model="dates[0]" :left="true" :yearOffset="yearOffset"></vue-datepicker-local-calendar>
+        <vue-datepicker-local-calendar v-model="dates[1]" :right="true" :yearOffset="yearOffset"></vue-datepicker-local-calendar>
       </template>
       <template v-else>
-        <vue-datepicker-local-calendar v-model="dates[0]"></vue-datepicker-local-calendar>
+        <vue-datepicker-local-calendar v-model="dates[0]" :yearOffset="yearOffset"></vue-datepicker-local-calendar>
       </template>
       <div v-if="showButtons" class="datepicker__buttons">
         <button @click.prevent.stop="cancel" class="datepicker__button-cancel">{{this.local.cancelTip}}</button>
@@ -59,15 +59,15 @@ export default {
       default () {
         return {
           dow: 1, // Monday is the first day of the week
-          hourTip: '选择小时', // tip of select hour
-          minuteTip: '选择分钟', // tip of select minute
-          secondTip: '选择秒数', // tip of select second
+          hourTip: '選擇小时', // tip of select hour
+          minuteTip: '選擇分鐘', // tip of select minute
+          secondTip: '選擇秒數', // tip of select second
           yearSuffix: '年', // format of head
           monthsHead: '1月_2月_3月_4月_5月_6月_7月_8月_9月_10月_11月_12月'.split('_'), // months of head
           months: '一月_二月_三月_四月_五月_六月_七月_八月_九月_十月_十一月_十二月'.split('_'), // months of panel
           weeks: '一_二_三_四_五_六_日'.split('_'), // weeks
           cancelTip: '取消', // default text for cancel button
-          submitTip: '确定' // default text for submit button
+          submitTip: '確定' // default text for submit button
         }
       }
     },
@@ -75,19 +75,49 @@ export default {
       type: Boolean,
       default: false
     },
-    dateRangeSelect: [Function]
+    dateRangeSelect: [Function],
+    yearOffset: {
+      type: Number,
+      default: 0
+    }
   },
   data () {
     return {
       show: false,
-      dates: this.vi(this.value)
+      dates: this.vi(this.value),
+      text: ''
     }
   },
   computed: {
     range () {
       return this.dates.length === 2
+    }
+  },
+  watch: {
+    value (val) {
+      console.log("watch: " + this.value);
+      this.dates = this.vi(this.value)
+      this.text = this.displayText()
+    }
+  },
+  methods: {
+    syncDate() {
+      if(this.text.length == this.format.length) {
+        // 暫時當year一定是開頭...
+        const yearLocation = this.format.indexOf('Y');
+        const monthLocation = this.format.indexOf('M');
+        const dayLocation = this.format.indexOf('D');
+        const yearStr = Number(this.text.substr(yearLocation, 4)) + this.yearOffset;
+        const monthStr = this.text.substr(monthLocation,2);
+        const dayStr = this.text.substr(dayLocation,2);
+        const newDate = new Date(this.dates[0]);
+        newDate.setYear(yearStr);
+        newDate.setMonth(Number(monthStr) - 1);
+        newDate.setDate(Number(dayStr));
+        this.$emit('input', newDate);
+      }
     },
-    text () {
+    displayText () {
       const val = this.value
       const txt = this.dates.map(date => this.tf(date)).join(` ${this.rangeSeparator} `)
       if (Array.isArray(val)) {
@@ -95,14 +125,7 @@ export default {
       } else {
         return val ? txt : ''
       }
-    }
-  },
-  watch: {
-    value (val) {
-      this.dates = this.vi(this.value)
-    }
-  },
-  methods: {
+    },
     get () {
       return Array.isArray(this.value) ? this.dates : this.dates[0]
     },
@@ -125,7 +148,7 @@ export default {
       })
     },
     tf (time, format) {
-      const year = time.getFullYear()
+      const year = this.textYear(time)
       const month = time.getMonth()
       const day = time.getDate()
       const hours24 = time.getHours()
@@ -153,6 +176,14 @@ export default {
         S: milliseconds
       }
       return (format || this.format).replace(/Y+|M+|D+|H+|h+|m+|s+|S+/g, str => map[str])
+    },
+    textYear(time) {
+      const year = time.getFullYear() - this.yearOffset
+      if(year <= 999) {
+        return '0' + year
+      } else {
+        return year
+      }
     },
     dc (e) {
       this.show = this.$el.contains(e.target) && !this.disabled
@@ -188,7 +219,7 @@ export default {
   width: 34px;
   height: 100%;
   top: 0;
-  right: 0;
+  left: 0;
   background: url('data:image/svg+xml;base64,PHN2ZyBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iMjAiIGhlaWdodD0iMjAiPjxwYXRoIGQ9Ik01NjQgMTgwLjJINDQ4Yy04LjMgMC0xNS02LjctMTUtMTVzNi43LTE1IDE1LTE1aDExNmM4LjIgMCAxNSA2LjcgMTUgMTVzLTYuOCAxNS0xNSAxNXoiIGZpbGw9IiM5ODk4OTgiLz48cGF0aCBkPSJNOTQ1IDk1Mi4ySDgxLjJjLTguMiAwLTE1LTYuNy0xNS0xNVYxNjIuOGMwLTguMyA2LjgtMTUgMTUtMTVIMjk0YzguMiAwIDE1IDYuNyAxNSAxNXMtNi44IDE1LTE1IDE1SDk2LjJ2NzQ0LjRIOTMwVjE3Ny44SDcxMy42Yy04LjMgMC0xNS02LjctMTUtMTVzNi43LTE1IDE1LTE1SDk0NWM4LjIgMCAxNSA2LjcgMTUgMTV2Nzc0LjRjMCA4LjMtNi44IDE1LTE1IDE1eiIgZmlsbD0iIzk4OTg5OCIvPjxwYXRoIGQ9Ik0zMzMuMyA1NTFIMjE2Yy04LjIgMC0xNS02LjgtMTUtMTVzNi44LTE1IDE1LTE1aDExNy4zYzguMyAwIDE1IDYuNiAxNSAxNXMtNi43IDE1LTE1IDE1em0yMzAuMyAwSDQ0Ni4zYy04LjMgMC0xNS02LjgtMTUtMTVzNi43LTE1IDE1LTE1aDExNy4zYzguMiAwIDE1IDYuNiAxNSAxNXMtNi44IDE1LTE1IDE1em0yMzAuMiAwSDY3Ni42Yy04LjMgMC0xNS02LjgtMTUtMTVzNi43LTE1IDE1LTE1aDExNy4yYzguMyAwIDE1IDYuNiAxNSAxNXMtNi43IDE1LTE1IDE1ek0zMzMuMyA3NDBIMjE2Yy04LjIgMC0xNS02LjgtMTUtMTVzNi44LTE1IDE1LTE1aDExNy4zYzguMyAwIDE1IDYuNiAxNSAxNXMtNi43IDE1LTE1IDE1em0yMzAuMyAwSDQ0Ni4zYy04LjMgMC0xNS02LjgtMTUtMTVzNi43LTE1IDE1LTE1aDExNy4zYzguMiAwIDE1IDYuNiAxNSAxNXMtNi44IDE1LTE1IDE1em0yMzAuMiAwSDY3Ni42Yy04LjMgMC0xNS02LjgtMTUtMTVzNi43LTE1IDE1LTE1aDExNy4yYzguMyAwIDE1IDYuNiAxNSAxNXMtNi43IDE1LTE1IDE1ek0zNzAuOCAyNTguNmMtOC4zIDAtMTUtNi43LTE1LTE1Vjg2LjhjMC04LjIgNi43LTE1IDE1LTE1czE1IDYuOCAxNSAxNXYxNTYuOGMwIDguMy02LjcgMTUtMTUgMTV6bTI3MC4yIDBjLTguMyAwLTE1LTYuNy0xNS0xNVY4Ni44YzAtOC4yIDYuNy0xNSAxNS0xNXMxNSA2LjggMTUgMTV2MTU2LjhjMCA4LjMtNi43IDE1LTE1IDE1ek05NDUgMzcyLjJIODEuMmMtOC4yIDAtMTUtNi43LTE1LTE1czYuOC0xNSAxNS0xNUg5NDVjOC4yIDAgMTUgNi43IDE1IDE1cy02LjggMTUtMTUgMTV6IiBmaWxsPSIjOTg5ODk4Ii8+PC9zdmc+') no-repeat 50% 50%;
 }
 
@@ -237,7 +268,7 @@ export default {
   height: 34px;
   box-sizing: border-box;
   outline: none;
-  padding: 0 34px 0 12px;
+  padding: 0 12px 0 34px;
   font-size: 14px;
   width: 100%;
   user-select: none;
